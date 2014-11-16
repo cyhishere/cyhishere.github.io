@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title><![CDATA[Mr. Chen]]></title>
+  <subtitle><![CDATA[There is something inside ,that they can't get to , that they can't touch. That's yours.]]></subtitle>
+  <link href="/atom.xml" rel="self"/>
+  <link href="http://yoursite.com/"/>
+  <updated>2014-11-16T11:24:04.784Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name><![CDATA[YanHong Chen]]></name>
+    <email><![CDATA[385424708@qq.com]]></email>
+  </author>
+  
+  <generator uri="http://zespia.tw/hexo/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[test]]></title>
+    <link href="http://yoursite.com/2014/11/16/test/"/>
+    <id>http://yoursite.com/2014/11/16/test/</id>
+    <published>2014-11-16T09:31:45.000Z</published>
+    <updated>2014-11-16T10:08:07.000Z</updated>
+    <content type="html"><![CDATA[<p><img src="/img/test.jpg" alt="test"><br><img src="/img/2.png" alt="2"></p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p><img src="/img/test.jpg" alt="test"><br><img src="/img/2.png" alt="2"></p>
+]]>
+    </summary>
+    
+  </entry>
+  
+</feed>
