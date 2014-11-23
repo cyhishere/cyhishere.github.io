@@ -4,7 +4,7 @@
   <subtitle><![CDATA[There is something inside ,that they can't get to , that they can't touch. That's yours.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-11-23T07:06:04.336Z</updated>
+  <updated>2014-11-23T07:09:46.780Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,14 +15,12 @@
   <generator uri="http://zespia.tw/hexo/">Hexo</generator>
   
   <entry>
-    <title><![CDATA[]]></title>
+    <title><![CDATA[Cocos2d-x之内存管理]]></title>
     <link href="http://yoursite.com/2014/11/23/cocos2dxautorelease/"/>
     <id>http://yoursite.com/2014/11/23/cocos2dxautorelease/</id>
-    <published>2014-11-23T07:05:31.000Z</published>
-    <updated>2014-11-23T07:05:31.000Z</updated>
-    <content type="html"><![CDATA[<p>title: Cocos2d-x之内存管理（一）<br>date: 2014-11-23 15:01:52<br>categories:cocos2d-x</p>
-<h2 id="tags:[cocos2d-x,游戏引擎]">tags:[cocos2d-x,游戏引擎]</h2>
-<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
+    <published>2014-11-23T07:01:52.000Z</published>
+    <updated>2014-11-23T07:09:40.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
 <ul>
 <li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
 </ul>
@@ -79,9 +77,14 @@
 <p><a href="http://cn.cocos2d-x.org/tutorial/show?id=1668" target="_blank" rel="external">cocos2d-x的CCObeject与autorelease之深入分析</a></p>
 ]]></content>
     <summary type="html">
-    <![CDATA[<p>title: Cocos2d-x之内存管理（一）<br>date: 2014-11-23 15:01:52<br>categories:cocos2d-x</p>
-<h2 id="tags:[cocos2d-x,游戏引擎]">tags:[cocos2d-x,游戏引擎]</h]]>
+    <![CDATA[<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
+<ul>
+<li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机]]>
     </summary>
+    
+      <category term="[object Object]" scheme="http://yoursite.com/tags/-object-Object/"/>
+    
+      <category term="cocos2d-x" scheme="http://yoursite.com/categories/cocos2d-x/"/>
     
   </entry>
   

@@ -4,16 +4,14 @@
 <head>
   <meta charset="UTF-8">
   
-    <title>Mr. Chen</title>
+    <title>Cocos2d-x之内存管理 | Mr. Chen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
     
     <meta name="author" content="YanHong Chen">
     
-    <meta name="description" content="title: Cocos2d-x之内存管理（一）date: 2014-11-23 15:01:52categories:cocos2d-x
-tags:[cocos2d-x,游戏引擎]
-cocos2dx内存管理
+    <meta name="description" content="cocos2dx内存管理
 
-在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，">
+在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在">
     
     
     
@@ -75,15 +73,15 @@ cocos2dx内存管理
 		<header class="article-info clearfix">
   <h1 itemprop="name">
     
-      <a href="/2014/11/23/cocos2dxautorelease/" title="" itemprop="url"></a>
+      <a href="/2014/11/23/cocos2dxautorelease/" title="Cocos2d-x之内存管理" itemprop="url">Cocos2d-x之内存管理</a>
   </h1>
   <p class="article-author">By
     
       <a href="http://yoursite.com" title="YanHong Chen">YanHong Chen</a>
     </p>
   <p class="article-time">
-    <time datetime="2014-11-23T07:05:31.000Z" itemprop="datePublished">11月 23 2014</time>
-    更新日期:<time datetime="2014-11-23T07:05:31.000Z" itemprop="dateModified">11月 23 2014</time>
+    <time datetime="2014-11-23T07:01:52.000Z" itemprop="datePublished">11月 23 2014</time>
+    更新日期:<time datetime="2014-11-23T07:09:40.000Z" itemprop="dateModified">11月 23 2014</time>
     
   </p>
 </header>
@@ -92,12 +90,10 @@ cocos2dx内存管理
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
-		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#tags:[cocos2d-x,游戏引擎]"><span class="toc-number">1.</span> <span class="toc-text">tags:[cocos2d-x,游戏引擎]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">2.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">3.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">4.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">4.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
 		</div>
 		
-		<p>title: Cocos2d-x之内存管理（一）<br>date: 2014-11-23 15:01:52<br>categories:cocos2d-x</p>
-<h2 id="tags:[cocos2d-x,游戏引擎]">tags:[cocos2d-x,游戏引擎]</h2>
-<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
+		<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
 <ul>
 <li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
 </ul>
@@ -156,12 +152,22 @@ cocos2dx内存管理
 	</div>
 		<footer class="article-footer clearfix">
 
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/-object-Object/">[object Object]</a>
+  </div>
+
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/cocos2d-x/">cocos2d-x</a>
+</div>
 
 
 
 <div class="article-share" id="share">
 
-  <div data-url="http://yoursite.com/2014/11/23/cocos2dxautorelease/" data-title="Mr. Chen" data-tsina="1782785671" class="share clearfix">
+  <div data-url="http://yoursite.com/2014/11/23/cocos2dxautorelease/" data-title="Cocos2d-x之内存管理 | Mr. Chen" data-tsina="1782785671" class="share clearfix">
   </div>
 
 </div>
@@ -191,7 +197,7 @@ cocos2dx内存管理
 
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
-  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#tags:[cocos2d-x,游戏引擎]"><span class="toc-number">1.</span> <span class="toc-text">tags:[cocos2d-x,游戏引擎]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">2.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">3.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">4.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">4.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
   </div>
 
 <div id="asidepart">
@@ -199,8 +205,26 @@ cocos2dx内存管理
 <aside class="clearfix">
 
   
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+			<li><a href="/categories/cocos2d-x/" title="cocos2d-x">cocos2d-x<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
 
   
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			<li><a href="/tags/-object-Object/" title="[object Object]">[object Object]<sup>1</sup></a></li>
+		
+		</ul>
+</div>
+
 
   
 
