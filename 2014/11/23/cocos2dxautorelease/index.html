@@ -1,0 +1,393 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>Mr. Chen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=3, minimum-scale=1">
+    
+    <meta name="author" content="YanHong Chen">
+    
+    <meta name="description" content="title: Cocos2d-x之内存管理（一）date: 2014-11-23 15:01:52categories:cocos2d-x
+tags:[cocos2d-x,游戏引擎]
+cocos2dx内存管理
+
+在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，">
+    
+    
+    
+    
+    <link rel="alternate" href="/atom.xml" title="Mr. Chen" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/pacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/pacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css" type="text/css">
+
+</head>
+
+  <body>
+    <header>
+      <div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.svg" alt="Mr. Chen" title="Mr. Chen"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="Mr. Chen">Mr. Chen</a></h1>
+				<h2 class="blog-motto">There is something inside ,that they can&#39;t get to , that they can&#39;t touch. That&#39;s yours.</h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+			<li> <a href="/atom.xml">RSS</a> </li> 
+				<ul>
+					
+						<li><a href="/">首页</a></li>
+					
+						<li><a href="/archives">存档</a></li>
+					
+						<li><a href="/about">关于</a></li>
+					
+					<li>
+					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="text" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:yoursite.com">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>			
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2014/11/23/cocos2dxautorelease/" title="" itemprop="url"></a>
+  </h1>
+  <p class="article-author">By
+    
+      <a href="http://yoursite.com" title="YanHong Chen">YanHong Chen</a>
+    </p>
+  <p class="article-time">
+    <time datetime="2014-11-23T07:05:31.000Z" itemprop="datePublished">11月 23 2014</time>
+    更新日期:<time datetime="2014-11-23T07:05:31.000Z" itemprop="dateModified">11月 23 2014</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#tags:[cocos2d-x,游戏引擎]"><span class="toc-number">1.</span> <span class="toc-text">tags:[cocos2d-x,游戏引擎]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">2.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">3.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">4.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+		</div>
+		
+		<p>title: Cocos2d-x之内存管理（一）<br>date: 2014-11-23 15:01:52<br>categories:cocos2d-x</p>
+<h2 id="tags:[cocos2d-x,游戏引擎]">tags:[cocos2d-x,游戏引擎]</h2>
+<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
+<ul>
+<li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
+</ul>
+<h2 id="引用计数">引用计数</h2>
+<ul>
+<li>通过给每个对象维护一个引用计数器，记录对象当前被引用的次数，每增加一次引用时计数+1；销毁一次引用时计数-1，当引用计数为0的时候自动触发该对象的释放。</li>
+</ul>
+<h2 id="cocos2dx基于引用计数实现内存管理">cocos2dx基于引用计数实现内存管理</h2>
+<ul>
+<li>在3.x之前的版本中内存管理方式类似Objective-C里面的自动回收池的机制来管理对象内存的释放：在cocos中在每帧渲染结束时，在游戏的每一帧都会执行一个大循环，建立一个内存回收池，把autorelease的对象加入到这个回收池中，每一帧结束后，回收池被释放，池中每个对象都会release一下，计数-1，当引用计数等于0的时候，就会删除对象，如果引用计数不为0，就不会删除，在下一帧的时候会重新创建一个回收池，当前帧中调用autorelease的对象的会被加入，上一次添加的对象不会再添加：</li>
+</ul>
+<figure class="highlight CCDirector.cpp```"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">   void CCDisplayLinkDirector::mainLoop(void)</div><div class="line">{</div><div class="line">	<span class="keyword">...</span></div><div class="line">	CCPoolManager::sharedPoolManager()-&gt;pop();  </div><div class="line">	<span class="keyword">...</span>     </div><div class="line">}</div></pre></td></tr></table></figure>
+
+<p>CCAutoreleasepool.cpp</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="makefile">	void CCPoolManager::pop()</span></div><div class="line">	{</div><div class="line">		if (! m_pCurReleasePool)</div><div class="line">		{</div><div class="line">			return;</div><div class="line">		}</div><div class="line">		int nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">		m_pCurReleasePool-&gt;clear();</div><div class="line">		if(nCount &gt; 1)</div><div class="line">		{</div><div class="line">			m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-1);</div><div class="line">			m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - 2);</div><div class="line"></div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line"><span class="comment">##retain和release</span></div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。</div><div class="line">通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain：</div></pre></td></tr></table></figure>
+
+<p>CCNode.cpp```</p>
+<pre><code><span class="literal">void</span> CCNode<span class="tag">::childrenAlloc</span>(<span class="literal">void</span>)
+{
+    m_pChildren <span class="subst">=</span> CCArray<span class="tag">::createWithCapacity</span>(<span class="number">4</span>);
+    m_pChildren<span class="subst">-&gt;</span>retain();<span class="comment">//调用retain</span>
+}
+<span class="literal">void</span> CCNode<span class="tag">::addChild</span>(CCNode <span class="subst">*</span>child, int zOrder, int <span class="built_in">tag</span>)
+{    
+    CCAssert( child <span class="subst">!=</span> <span class="built_in">NULL</span>, <span class="string">"Argument must be non-nil"</span>);
+    CCAssert( child<span class="subst">-&gt;</span>m_pParent <span class="subst">==</span> <span class="built_in">NULL</span>, <span class="string">"child already added. It can't be added again"</span>);
+
+    <span class="keyword">if</span>( <span class="subst">!</span> m_pChildren )
+    {
+           this<span class="subst">-&gt;</span>childrenAlloc();<span class="comment">//分配child的空间</span>
+    }
+
+    this<span class="subst">-&gt;</span>insertChild(child, zOrder);
+
+    child<span class="subst">-&gt;</span>m_nTag <span class="subst">=</span> <span class="built_in">tag</span>;
+
+    child<span class="subst">-&gt;</span>setParent(this);
+    child<span class="subst">-&gt;</span>setOrderOfArrival(s_globalOrderOfArrival<span class="subst">++</span>);
+
+    <span class="keyword">if</span>( m_bRunning )
+    {
+        child<span class="subst">-&gt;</span>onEnter();
+        child<span class="subst">-&gt;</span>onEnterTransitionDidFinish();
+    }
+}
+</code></pre><ul>
+<li>所以说，那些被添加的父类中的对象无需调用retain，因为父类已经为它调用的retain，并且在销毁时调用release。而像array、sequence这些临时用来存储的对象在创建的时候引用计数为1，因为在使用的时候基本不会把它添加到父类，所以就不会调用到retain，当当前帧结束时，删除当前帧创建的进程池，并对进程池中的对象调用release，引用计数-1，所以之前创建的arry、sequence的引用计数变为了0，自动被销毁清除。</li>
+</ul>
+<h2 id="3-1之后的版本新增RefPtr内存管理方式">3.1之后的版本新增RefPtr内存管理方式</h2>
+<p>在3.1以后的版本中新增了参考C++中share_ptr实现的RefPtr智能指针方式，这种将在以后的文章中分析学习。</p>
+<h2 id="参考">参考</h2>
+<p><a href="http://cn.cocos2d-x.org/tutorial/show?id=1668" target="_blank" rel="external">解析Cocos2d-x中的只能指针</a></p>
+<p><a href="http://www.zaojiahua.com/memory-management.html" target="_blank" rel="external">Cocos2d-x的内存管理机制</a></p>
+<p><a href="http://cn.cocos2d-x.org/tutorial/show?id=1668" target="_blank" rel="external">cocos2d-x的CCObeject与autorelease之深入分析</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+
+
+
+
+<div class="article-share" id="share">
+
+  <div data-url="http://yoursite.com/2014/11/23/cocos2dxautorelease/" data-title="Mr. Chen" data-tsina="1782785671" class="share clearfix">
+  </div>
+
+</div>
+</footer>   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+
+<div class="next">
+<a href="/2014/11/16/test/"  title="test">
+ <strong>NEXT:</strong><br/> 
+ <span>test
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+<section class="comment">
+	<div class="ds-thread"></div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#tags:[cocos2d-x,游戏引擎]"><span class="toc-number">1.</span> <span class="toc-text">tags:[cocos2d-x,游戏引擎]</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">2.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">3.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">4.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+  
+
+  
+
+  <div class="rsspart">
+	<a href="/atom.xml" target="_blank" title="rss">RSS 订阅</a>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+	
+	<div class="line">
+		<span></span>
+		<div class="author"></div>
+	</div>
+	
+	
+	<section class="info">
+		<p> 我依赖大海，并且信仰高山 <br/>
+			最好你经过我身旁，你也喜欢我这一种简单</p>
+	</section>
+	 
+	<div class="social-font clearfix">
+		
+		<a href="http://weibo.com/1782785671" target="_blank" title="weibo"></a>
+		
+		
+		
+		<a href="https://github.com/cyhishere" target="_blank" title="github"></a>
+		
+		
+		
+	</div>
+		<p class="copyright">Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/A-limon/pacman" target="_blank" title="Pacman">Pacman</a> © 2014 
+		
+		<a href="http://yoursite.com" target="_blank" title="YanHong Chen">YanHong Chen</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.1.0.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else
+    {
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      h  = $('article h2')
+      ah = $('article h2'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  if(ah.length==0){
+    t.css('display','none');
+  }else{
+    c.click(function(){
+      ta.css('display', 'block').addClass('fadeIn');
+    });
+    o.click(function(){
+      ta.css('display', 'none');
+    });
+    $(window).scroll(function(){
+      ta.css("top",Math.max(140,320-$(this).scrollTop()));
+    });
+  };
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina');
+  var html = [
+  '<a href="#" class="overlay" id="qrcode"></a>',
+  '<div class="qrcode clearfix"><span>扫描二维码分享到微信朋友圈</span><a class="qrclose" href="#share"></a><strong>Loading...Please wait</strong><img id="qrcode-pic" data-src="http://s.jiathis.com/qrcode.php?url=' + encodedUrl + '"/></div>',
+  '<a href="#textlogo" class="article-back-to-top" title="Top"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="QRcode"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="Weibo"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+  $('.article-share-qrcode').click(function(){
+    var imgSrc = $('#qrcode-pic').attr('data-src');
+    $('#qrcode-pic').attr('src', imgSrc);
+    $('#qrcode-pic').load(function(){
+        $('.qrcode strong').text(' ');
+    });
+  });
+});     
+</script>
+
+
+<script type="text/javascript">
+  var duoshuoQuery = {short_name:"null"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] 
+    || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+</script> 
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+  </body>
+</html>
