@@ -81,7 +81,7 @@
     </p>
   <p class="article-time">
     <time datetime="2014-11-23T07:01:52.000Z" itemprop="datePublished">11月 23 2014</time>
-    更新日期:<time datetime="2014-11-23T07:27:09.000Z" itemprop="dateModified">11月 23 2014</time>
+    更新日期:<time datetime="2014-11-23T07:33:36.000Z" itemprop="dateModified">11月 23 2014</time>
     
   </p>
 </header>
@@ -108,7 +108,7 @@
 <figure class="highlight CCDirector.cpp```"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="lasso">  <span class="literal">void</span> CCDisplayLinkDirector<span class="tag">::mainLoop</span>(<span class="literal">void</span>)</span></div><div class="line">  {</div><div class="line"><span class="attribute">...</span><span class="attribute">...</span></div><div class="line">CCPoolManager<span class="tag">::sharedPoolManager</span>()<span class="subst">-&gt;</span>pop();  </div><div class="line"><span class="attribute">...</span><span class="attribute">...</span><span class="built_in">.</span>   </div><div class="line">  }</div></pre></td></tr></table></figure>
 
 <p>CCAutoreleasepool.cpp</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="makefile">	void CCPoolManager::pop()</span></div><div class="line">	{</div><div class="line">		if (! m_pCurReleasePool)</div><div class="line">		{</div><div class="line">			return;</div><div class="line">		}</div><div class="line">		int nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">		m_pCurReleasePool-&gt;clear();</div><div class="line">		if(nCount &gt; 1)</div><div class="line">		{</div><div class="line">			m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-1);</div><div class="line">			m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - 2);</div><div class="line"></div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line"><span class="comment">##retain和release</span></div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain:</div></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">    void CCPoolManager::pop()</div><div class="line">    {</div><div class="line">        if (! m_pCurReleasePool)</div><div class="line">        {</div><div class="line">        	return;</div><div class="line">		}</div><div class="line">		int nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">		m_pCurReleasePool-&gt;clear();</div><div class="line">		if(nCount &gt; 1)</div><div class="line">		{</div><div class="line">			m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-1);</div><div class="line">			m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - 2);</div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line"><span class="comment">##retain和release</span></div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain:</div><div class="line">*</div></pre></td></tr></table></figure>
 
 <p>CCNode.cpp```</p>
 <pre><code><span class="literal">void</span> CCNode<span class="tag">::childrenAlloc</span>(<span class="literal">void</span>)
@@ -120,19 +120,14 @@
 {    
     CCAssert( child <span class="subst">!=</span> <span class="built_in">NULL</span>, <span class="string">"Argument must be non-nil"</span>);
     CCAssert( child<span class="subst">-&gt;</span>m_pParent <span class="subst">==</span> <span class="built_in">NULL</span>, <span class="string">"child already added. It can't be added again"</span>);
-
     <span class="keyword">if</span>( <span class="subst">!</span> m_pChildren )
     {
-           this<span class="subst">-&gt;</span>childrenAlloc();<span class="comment">//分配child的空间</span>
+    this<span class="subst">-&gt;</span>childrenAlloc();<span class="comment">//分配child的空间</span>
     }
-
     this<span class="subst">-&gt;</span>insertChild(child, zOrder);
-
     child<span class="subst">-&gt;</span>m_nTag <span class="subst">=</span> <span class="built_in">tag</span>;
-
     child<span class="subst">-&gt;</span>setParent(this);
     child<span class="subst">-&gt;</span>setOrderOfArrival(s_globalOrderOfArrival<span class="subst">++</span>);
-
     <span class="keyword">if</span>( m_bRunning )
     {
         child<span class="subst">-&gt;</span>onEnter();
