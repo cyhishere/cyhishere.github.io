@@ -4,7 +4,7 @@
   <subtitle><![CDATA[There is something inside ,that they can't get to , that they can't touch. That's yours.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-11-23T07:09:46.780Z</updated>
+  <updated>2014-11-23T07:12:09.354Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2014/11/23/cocos2dxautorelease/"/>
     <id>http://yoursite.com/2014/11/23/cocos2dxautorelease/</id>
     <published>2014-11-23T07:01:52.000Z</published>
-    <updated>2014-11-23T07:09:40.000Z</updated>
+    <updated>2014-11-23T07:11:57.000Z</updated>
     <content type="html"><![CDATA[<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
 <ul>
 <li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
