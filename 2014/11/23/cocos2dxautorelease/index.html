@@ -11,7 +11,7 @@
     
     <meta name="description" content="cocos2dx内存管理
 
-在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在">
+在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2d-x的内存管理机制引起的。在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new">
     
     
     
@@ -81,7 +81,7 @@
     </p>
   <p class="article-time">
     <time datetime="2014-11-23T07:01:52.000Z" itemprop="datePublished">11月 23 2014</time>
-    更新日期:<time datetime="2014-11-23T07:48:24.000Z" itemprop="dateModified">11月 23 2014</time>
+    更新日期:<time datetime="2014-11-23T08:09:42.000Z" itemprop="dateModified">11月 23 2014</time>
     
   </p>
 </header>
@@ -90,12 +90,12 @@
 		
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">文章目录</strong>
-		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">4.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#retain和release"><span class="toc-number">4.</span> <span class="toc-text">retain和release</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
 		</div>
 		
 		<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
 <ul>
-<li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
+<li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2d-x的内存管理机制引起的。在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2d-x是在堆上进行内存分配，cocos2d-x内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos2d-x的回收机制根据引用计数来决定是否释放对象。</li>
 </ul>
 <h2 id="引用计数">引用计数</h2>
 <ul>
@@ -103,11 +103,33 @@
 </ul>
 <h2 id="cocos2dx基于引用计数实现内存管理">cocos2dx基于引用计数实现内存管理</h2>
 <ul>
-<li>在3.x之前的版本中内存管理方式类似Objective-C里面的自动回收池的机制来管理对象内存的释放：在cocos中在每帧渲染结束时，在游戏的每一帧都会执行一个大循环，建立一个内存回收池，把autorelease的对象加入到这个回收池中，每一帧结束后，回收池被释放，池中每个对象都会release一下，计数-1，当引用计数等于0的时候，就会删除对象，如果引用计数不为0，就不会删除，在下一帧的时候会重新创建一个回收池，当前帧中调用autorelease的对象的会被加入，上一次添加的对象不会再添加。</li>
-</ul>
-<figure class="highlight CCDirector.cpp、CCAutoreleasepool.cpp```"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">    void CCDisplayLinkDirector::mainLoop(void)</div><div class="line">    {</div><div class="line">		CCPoolManager::sharedPoolManager()-&gt;pop();  </div><div class="line">    }</div><div class="line">    void CCPoolManager::pop()</div><div class="line">    {	</div><div class="line">    	<span class="keyword">if</span> (! m_pCurReleasePool)</div><div class="line">    	{</div><div class="line">    	<span class="keyword">return</span>;</div><div class="line">    	}</div><div class="line">    	<span class="keyword">int</span> nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">    	m_pCurReleasePool-&gt;clear();</div><div class="line">    	<span class="keyword">if</span>(nCount &gt; <span class="number">1</span>)</div><div class="line">    	{</div><div class="line">    	m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-<span class="number">1</span>);</div><div class="line">    	m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - <span class="number">2</span>);</div><div class="line">    	}</div><div class="line">	}</div><div class="line">    	</div><div class="line"></div><div class="line">##retain和release</div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain。</div></pre></td></tr></table></figure>
+<li><p>在3.x之前的版本中内存管理方式类似Objective-C里面的自动回收池的机制来管理对象内存的释放：在cocos中在每帧渲染时，在游戏的每一帧都会执行一个大循环，建立一个内存回收池，把autorelease的对象加入到这个回收池中，每一帧结束后，回收池被释放，池中每个对象都会release一下，计数-1，当引用计数等于0的时候，就会删除对象，如果引用计数不为0，就不会删除，在下一帧的时候会重新创建一个回收池，当前帧中调用autorelease的对象的会被加入，上一次添加的对象不会再添加,接着执行与之前相同步骤，详见CCDirector.cpp和CCAutorelease.cpp</p>
+<pre><code>  <span class="literal">void</span> CCDisplayLinkDirector<span class="tag">::mainLoop</span>(<span class="literal">void</span>)
 
-<p>CCNode.cpp```</p>
+  {
+          CCPoolManager<span class="tag">::sharedPoolManager</span>()<span class="subst">-&gt;</span>pop();
+  }
+  <span class="literal">void</span> CCPoolManager<span class="tag">::pop</span>()
+  {    
+      <span class="keyword">if</span> (<span class="subst">!</span> m_pCurReleasePool)
+      {
+          <span class="keyword">return</span>;
+      }
+      int nCount <span class="subst">=</span> m_pReleasePoolStack<span class="subst">-&gt;</span>count();
+      m_pCurReleasePool<span class="subst">-&gt;</span>clear();
+      <span class="keyword">if</span>(nCount <span class="subst">&gt;</span> <span class="number">1</span>)
+      {
+          m_pReleasePoolStack<span class="subst">-&gt;</span>removeObjectAtIndex(nCount<span class="subst">-</span><span class="number">1</span>);
+          m_pCurReleasePool <span class="subst">=</span> (CCAutoreleasePool<span class="subst">*</span>)m_pReleasePoolStack<span class="subst">-&gt;</span>objectAtIndex(nCount <span class="subst">-</span> <span class="number">2</span>);
+      }
+  }
+</code></pre></li>
+</ul>
+<h2 id="retain和release">retain和release</h2>
+<ul>
+<li>根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain。</li>
+</ul>
+<p><code>CCNode.cpp</code></p>
 <pre><code><span class="literal">void</span> CCNode<span class="tag">::childrenAlloc</span>(<span class="literal">void</span>)
 {
     m_pChildren <span class="subst">=</span> CCArray<span class="tag">::createWithCapacity</span>(<span class="number">4</span>);
@@ -119,7 +141,7 @@
     CCAssert( child<span class="subst">-&gt;</span>m_pParent <span class="subst">==</span> <span class="built_in">NULL</span>, <span class="string">"child already added. It can't be added again"</span>);
     <span class="keyword">if</span>( <span class="subst">!</span> m_pChildren )
     {
-    this<span class="subst">-&gt;</span>childrenAlloc();<span class="comment">//分配child的空间</span>
+        this<span class="subst">-&gt;</span>childrenAlloc();<span class="comment">//分配child的空间</span>
     }
     this<span class="subst">-&gt;</span>insertChild(child, zOrder);
     child<span class="subst">-&gt;</span>m_nTag <span class="subst">=</span> <span class="built_in">tag</span>;
@@ -189,7 +211,7 @@
 
   <div id="toc" class="toc-aside">
   <strong class="toc-title">文章目录</strong>
-  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">4.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">5.</span> <span class="toc-text">参考</span></a></li></ol>
+  <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx内存管理"><span class="toc-number">1.</span> <span class="toc-text">cocos2dx内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#引用计数"><span class="toc-number">2.</span> <span class="toc-text">引用计数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#cocos2dx基于引用计数实现内存管理"><span class="toc-number">3.</span> <span class="toc-text">cocos2dx基于引用计数实现内存管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#retain和release"><span class="toc-number">4.</span> <span class="toc-text">retain和release</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1之后的版本新增RefPtr内存管理方式"><span class="toc-number">5.</span> <span class="toc-text">3.1之后的版本新增RefPtr内存管理方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-number">6.</span> <span class="toc-text">参考</span></a></li></ol>
   </div>
 
 <div id="asidepart">
