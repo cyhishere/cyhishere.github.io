@@ -4,7 +4,7 @@
   <subtitle><![CDATA[There is something inside ,that they can't get to , that they can't touch. That's yours.]]></subtitle>
   <link href="/atom.xml" rel="self"/>
   <link href="http://yoursite.com/"/>
-  <updated>2014-11-23T07:12:09.354Z</updated>
+  <updated>2014-11-23T07:16:03.867Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="http://yoursite.com/2014/11/23/cocos2dxautorelease/"/>
     <id>http://yoursite.com/2014/11/23/cocos2dxautorelease/</id>
     <published>2014-11-23T07:01:52.000Z</published>
-    <updated>2014-11-23T07:11:57.000Z</updated>
+    <updated>2014-11-23T07:15:35.000Z</updated>
     <content type="html"><![CDATA[<h2 id="cocos2dx内存管理">cocos2dx内存管理</h2>
 <ul>
 <li>在之前的开发过程中经常碰到正常create的一个对象，在使用的时候报错提示对象未被创建，这种情况常常出现在sequence、array等对象上，这些都是由cocos2dx的内存管理机制引起的。<br>在C++中，内存分配可在栈上分配，栈上的内存管理我们无法处理；也可以通过new在堆上分配，然后通过手动delete，cocos2dx是在堆上进行内存分配，cocos2dx内存管理采用的是引用技术的方式，当创建一个对象后引用技术为1，并通过retain和release来增持和减少其引用计数，cocos的回收机制根据引用计数来决定是否释放对象。</li>
@@ -30,12 +30,12 @@
 </ul>
 <h2 id="cocos2dx基于引用计数实现内存管理">cocos2dx基于引用计数实现内存管理</h2>
 <ul>
-<li>在3.x之前的版本中内存管理方式类似Objective-C里面的自动回收池的机制来管理对象内存的释放：在cocos中在每帧渲染结束时，在游戏的每一帧都会执行一个大循环，建立一个内存回收池，把autorelease的对象加入到这个回收池中，每一帧结束后，回收池被释放，池中每个对象都会release一下，计数-1，当引用计数等于0的时候，就会删除对象，如果引用计数不为0，就不会删除，在下一帧的时候会重新创建一个回收池，当前帧中调用autorelease的对象的会被加入，上一次添加的对象不会再添加：</li>
+<li>在3.x之前的版本中内存管理方式类似Objective-C里面的自动回收池的机制来管理对象内存的释放：在cocos中在每帧渲染结束时，在游戏的每一帧都会执行一个大循环，建立一个内存回收池，把autorelease的对象加入到这个回收池中，每一帧结束后，回收池被释放，池中每个对象都会release一下，计数-1，当引用计数等于0的时候，就会删除对象，如果引用计数不为0，就不会删除，在下一帧的时候会重新创建一个回收池，当前帧中调用autorelease的对象的会被加入，上一次添加的对象不会再添加:</li>
 </ul>
 <figure class="highlight CCDirector.cpp```"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">   void CCDisplayLinkDirector::mainLoop(void)</div><div class="line">{</div><div class="line">	<span class="keyword">...</span></div><div class="line">	CCPoolManager::sharedPoolManager()-&gt;pop();  </div><div class="line">	<span class="keyword">...</span>     </div><div class="line">}</div></pre></td></tr></table></figure>
 
 <p>CCAutoreleasepool.cpp</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="makefile">	void CCPoolManager::pop()</span></div><div class="line">	{</div><div class="line">		if (! m_pCurReleasePool)</div><div class="line">		{</div><div class="line">			return;</div><div class="line">		}</div><div class="line">		int nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">		m_pCurReleasePool-&gt;clear();</div><div class="line">		if(nCount &gt; 1)</div><div class="line">		{</div><div class="line">			m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-1);</div><div class="line">			m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - 2);</div><div class="line"></div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line"><span class="comment">##retain和release</span></div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。</div><div class="line">通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain：</div></pre></td></tr></table></figure>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"></div><div class="line"><span class="makefile">	void CCPoolManager::pop()</span></div><div class="line">	{</div><div class="line">		if (! m_pCurReleasePool)</div><div class="line">		{</div><div class="line">			return;</div><div class="line">		}</div><div class="line">		int nCount = m_pReleasePoolStack-&gt;count();</div><div class="line">		m_pCurReleasePool-&gt;clear();</div><div class="line">		if(nCount &gt; 1)</div><div class="line">		{</div><div class="line">			m_pReleasePoolStack-&gt;removeObjectAtIndex(nCount-1);</div><div class="line">			m_pCurReleasePool = (CCAutoreleasePool*)m_pReleasePoolStack-&gt;objectAtIndex(nCount - 2);</div><div class="line"></div><div class="line">		}</div><div class="line">	}</div><div class="line"></div><div class="line"><span class="comment">##retain和release</span></div><div class="line"></div><div class="line">* 根据上面源码可以知道当创建完一个对象的成员变量后，如果不立即使用则会被内存自动(下一帧渲染时)清理掉。为了防止被清理，则需要在创建后调用retain，当不需要这个对象时调用release进行释放。</div><div class="line">通常在我们创建的一个sprite或者layer后，并不会去调用retain，而是把对象addChild给其它对象，之后就不会被清除，其实在addChild操作的时候调用了retain:</div></pre></td></tr></table></figure>
 
 <p>CCNode.cpp```</p>
 <pre><code><span class="literal">void</span> CCNode<span class="tag">::childrenAlloc</span>(<span class="literal">void</span>)
